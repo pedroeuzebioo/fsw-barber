@@ -7,9 +7,11 @@ import { authOptions } from "@/lib/auth";
 
 const BookingsPage = async () => {
   const session = await getServerSession(authOptions);
+
   if (!session?.user) {
     return redirect("/");
   }
+
   const [confirmedBookings, finishedBookings] = await Promise.all([
     db.booking.findMany({
       where: {
@@ -36,6 +38,7 @@ const BookingsPage = async () => {
       },
     }),
   ]);
+
   return (
     <>
       <Header />
@@ -70,4 +73,5 @@ const BookingsPage = async () => {
     </>
   );
 };
+
 export default BookingsPage;

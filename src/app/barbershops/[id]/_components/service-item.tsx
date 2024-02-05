@@ -1,4 +1,5 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,7 +10,7 @@ import { signIn, useSession } from "next-auth/react";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { generateDayTimeList } from "../_helpers/hours";
-import { format, setHours, setMinutes } from "date-fns";
+import { addDays, format, setHours, setMinutes } from "date-fns";
 import { saveBooking } from "../_actions/save-booking";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -21,9 +22,12 @@ interface ServiceItemProps {
   service: Service;
   isAuthenticated: boolean;
 }
+
 const ServiceItem = ({ service, barbershop, isAuthenticated }: ServiceItemProps) => {
   const router = useRouter();
+
   const { data } = useSession();
+
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [hour, setHour] = useState<string | undefined>();
   const [submitIsLoading, setSubmitIsLoading] = useState(false);
@@ -47,29 +51,37 @@ const ServiceItem = ({ service, barbershop, isAuthenticated }: ServiceItemProps)
     setDate(date);
     setHour(undefined);
   };
+
   const handleHourClick = (time: string) => {
     setHour(time);
   };
+
   const handleBookingClick = () => {
     if (!isAuthenticated) {
       return signIn("google");
     }
   };
+
   const handleBookingSubmit = async () => {
     setSubmitIsLoading(true);
+
     try {
       if (!hour || !date || !data?.user) {
         return;
       }
+
       const dateHour = Number(hour.split(":")[0]);
       const dateMinutes = Number(hour.split(":")[1]);
+
       const newDate = setMinutes(setHours(date, dateHour), dateMinutes);
+
       await saveBooking({
         serviceId: service.id,
         barbershopId: barbershop.id,
         date: newDate,
         userId: (data.user as any).id,
       });
+
       setSheetIsOpen(false);
       setHour(undefined);
       setDate(undefined);
@@ -126,9 +138,11 @@ const ServiceItem = ({ service, barbershop, isAuthenticated }: ServiceItemProps)
               alt={service.name}
             />
           </div>
+
           <div className="flex flex-col w-full">
             <h2 className="font-bold">{service.name}</h2>
             <p className="text-sm text-gray-400">{service.description}</p>
+
             <div className="flex items-center justify-between mt-3">
               <p className="text-primary text-sm font-bold">
                 {Intl.NumberFormat("pt-BR", {
@@ -142,17 +156,19 @@ const ServiceItem = ({ service, barbershop, isAuthenticated }: ServiceItemProps)
                     Reservar
                   </Button>
                 </SheetTrigger>
+
                 <SheetContent className="p-0">
                   <SheetHeader className="text-left px-5 py-6 border-b border-solid border-secondary">
                     <SheetTitle>Fazer Reserva</SheetTitle>
                   </SheetHeader>
+
                   <div className="py-6">
                     <Calendar
                       mode="single"
                       selected={date}
                       onSelect={handleDateClick}
                       locale={ptBR}
-                      fromDate={new Date()}
+                      fromDate={addDays(new Date(), 1)}
                       styles={{
                         head_cell: {
                           width: "100%",
@@ -178,6 +194,7 @@ const ServiceItem = ({ service, barbershop, isAuthenticated }: ServiceItemProps)
                       }}
                     />
                   </div>
+
                   {/* Mostrar lista de horários apenas se alguma data estiver selecionada */}
                   {date && (
                     <div className="flex gap-3 overflow-x-auto py-6 px-5 border-t border-solid border-secondary [&::-webkit-scrollbar]:hidden">
@@ -193,6 +210,7 @@ const ServiceItem = ({ service, barbershop, isAuthenticated }: ServiceItemProps)
                       ))}
                     </div>
                   )}
+
                   <div className="py-6 px-5 border-t border-solid border-secondary">
                     <Card>
                       <CardContent className="p-3 gap-3 flex flex-col">
@@ -206,6 +224,7 @@ const ServiceItem = ({ service, barbershop, isAuthenticated }: ServiceItemProps)
                             }).format(Number(service.price))}
                           </h3>
                         </div>
+
                         {date && (
                           <div className="flex justify-between">
                             <h3 className="text-gray-400 text-sm">Data</h3>
@@ -216,12 +235,14 @@ const ServiceItem = ({ service, barbershop, isAuthenticated }: ServiceItemProps)
                             </h4>
                           </div>
                         )}
+
                         {hour && (
                           <div className="flex justify-between">
                             <h3 className="text-gray-400 text-sm">Horário</h3>
                             <h4 className="text-sm">{hour}</h4>
                           </div>
                         )}
+
                         <div className="flex justify-between">
                           <h3 className="text-gray-400 text-sm">Barbearia</h3>
                           <h4 className="text-sm">{barbershop.name}</h4>
@@ -229,6 +250,7 @@ const ServiceItem = ({ service, barbershop, isAuthenticated }: ServiceItemProps)
                       </CardContent>
                     </Card>
                   </div>
+
                   <SheetFooter className="px-5">
                     <Button onClick={handleBookingSubmit} disabled={!hour || !date || submitIsLoading}>
                       {submitIsLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -244,4 +266,5 @@ const ServiceItem = ({ service, barbershop, isAuthenticated }: ServiceItemProps)
     </Card>
   );
 };
+
 export default ServiceItem;

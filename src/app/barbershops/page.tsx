@@ -1,44 +1,52 @@
 import { db } from "@/lib/prisma";
-import BarbershopInfo from "./[id]/_components/barbershop-info";
-import ServiceItem from "./[id]/_components/service-item";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import BarbershopItem from "@/app/(home)/_components/barbershop-item";
+import Header from "@/components/header";
+import Search from "../(home)/_components/search";
 
-interface BarbershopDetailsPageProps {
-  params: {
-    id?: string;
+interface BarbershopsPageProps {
+  searchParams: {
+    search?: string;
   };
 }
 
-const BarbershopDetailsPage = async ({ params }: BarbershopDetailsPageProps) => {
-  const session = await getServerSession(authOptions);
-
-  if (!params.id) {
-    // TODO: redirecionar para home page
-    return null;
+const BarbershopsPage = async ({ searchParams }: BarbershopsPageProps) => {
+  if (!searchParams.search) {
+    return redirect("/");
   }
-  const barbershop = await db.barbershop.findUnique({
+
+  const barbershops = await db.barbershop.findMany({
     where: {
-      id: params.id,
-    },
-    include: {
-      services: true,
+      name: {
+        contains: searchParams.search,
+        mode: "insensitive",
+      },
     },
   });
-  if (!barbershop) {
-    // TODO: redirecionar para home page
-    return null;
-  }
-  return (
-    <div>
-      <BarbershopInfo barbershop={barbershop} />
 
-      <div className="px-5 flex flex-col gap-4 py-6">
-        {barbershop.services.map((service) => (
-          <ServiceItem key={service.id} barbershop={barbershop} service={service} isAuthenticated={!!session?.user} />
-        ))}
+  return (
+    <>
+      <Header />
+
+      <div className="px-5 py-6 flex flex-col gap-6">
+        <Search
+          defaultValues={{
+            search: searchParams.search,
+          }}
+        />
+
+        <h1 className="text-gray-400 font-bold text-xs uppercase">Resultados para &quot;{searchParams.search}&quot;</h1>
+
+        <div className="grid grid-cols-2 gap-4">
+          {barbershops.map((barbershop) => (
+            <div key={barbershop.id} className="w-full">
+              <BarbershopItem barbershop={barbershop} />
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
-export default BarbershopDetailsPage;
+
+export default BarbershopsPage;

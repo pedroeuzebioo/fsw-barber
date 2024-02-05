@@ -157,6 +157,7 @@ const BookingItem = ({ booking }: BookingItemProps) => {
                 Voltar
               </Button>
             </SheetClose>
+
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button disabled={!isBookingConfirmed || isDeleteLoading} className="w-full" variant="destructive">
