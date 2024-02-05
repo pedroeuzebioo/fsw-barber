@@ -32,7 +32,7 @@ Esse projeto foi desenvolvido com as seguintes tecnologias:
 
 O FSW Barber é um sistema de barbearia na qual é possivel fazer login com o Google, buscar uma barbearia, fazer uma reserva e cancelar a mesma.
 
-- [Acesse o projeto finalizado, online](https:/fsw-barber-pedroeuzebio.vercel.app)
+- [Acesse o projeto finalizado, online](https://fsw-barber-pedroeuzebio.vercel.app/)
 
 ## 📝 Licença
 
